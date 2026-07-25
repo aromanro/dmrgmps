@@ -6,7 +6,7 @@ A Density Matrix Renormalization Group program with Matrix Product State and Mat
 > It's not in the state as it was generated, I looked briefly over the code and changed/removed/added quite a bit.
 > Still have to check all the details... so I'm not 100% it's ok.
 
-As already mentioned on the blog, there is a more modern method to deal with those blocks... method I already used in some other projects, like [iTEBD](https://github.com/aromanro/TEBD) or [QCSim](https://github.com/aromanro/QCSim)(more specifically, the MPS and MPO simulators).
+As already mentioned on the blog, there is a more modern method to deal with those blocks... a method I already used in some other projects, like [iTEBD](https://github.com/aromanro/TEBD) or [QCSim](https://github.com/aromanro/QCSim) (more specifically, the MPS and MPO simulators).
 
 I used Claude Opus 4.8, the old [dmrg project](https://github.com/aromanro/dmrg) as a starting point (I simply copied and renamed some things before starting to port it), then I used a prompt explaining what I needed, asking the AI to look at the dmrg project and also pointing out the MPS implementation from the [QCSim project](https://github.com/aromanro/QCSim) (I explicitely named all the relevant files).
 It wasn't perfect at first, it had bugs which were caught and fixed by the tests I asked to be implemented, then still nothing was displayed in the chart because the operators were not transformed properly.
