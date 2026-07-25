@@ -61,7 +61,7 @@ namespace DMRG {
 				for (int i = 0; i < a.N; ++i)
 					O = UpdateLeftOverlap(O, a.GetSiteTensor(i), b.GetSiteTensor(i));
 
-				assert(O.rows() == 1 && O.cols() == 1);
+				assert(O.dimension(0) == 1 && O.dimension(1) == 1);
 
 				return O(0, 0);
 			}
@@ -306,7 +306,6 @@ namespace DMRG {
 		double MPSDMRGAlgorithm::GroundStateSearch(MatrixProductState& state, int numSweeps, const std::vector<const MatrixProductState*>& references, double penaltyWeight)
 		{
 			const int N = state.N;
-			const int chi = static_cast<int>(maxStates);
 			const bool deflate = !references.empty() && (penaltyWeight != 0.);
 			const int R = deflate ? static_cast<int>(references.size()) : 0;
 			const bool twoSite = (sweepMode == SweepMode::TwoSite) && (N >= 2);
@@ -553,12 +552,13 @@ namespace DMRG {
 			return cols;
 		}
 
-		double MPSDMRGAlgorithm::EnergyExpectation(const MatrixProductState& state) const
+		double MPSDMRGAlgorithm::EnergyExpectation(const MatrixProductState& state)
 		{
 			const int N = state.N;
 			if (N <= 0) return std::numeric_limits<double>::infinity();
 
-			std::vector<Tensor3> Renv(N);
+			Renv.clear();
+			Renv.resize(N);
 			Renv[N - 1] = mpo.RightBoundary();
 			for (int i = N - 1; i > 0; --i)
 				Renv[i - 1] = mpo.UpdateRight(Renv[i], state.GetSiteTensor(i));

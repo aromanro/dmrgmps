@@ -96,7 +96,7 @@ namespace DMRG {
 			// gauge-independent overlaps, so their canonical form does not matter.
 			double GroundStateSearch(MatrixProductState& state, int numSweeps, const std::vector<const MatrixProductState*>& references, double penaltyWeight = 0.);
 
-			double EnergyExpectation(const MatrixProductState& state) const;
+			double EnergyExpectation(const MatrixProductState& state);
 			void ComputeMeasurements(MatrixProductState& state);
 		};
 
