@@ -1,4 +1,4 @@
-# dmrg
+# dmrgmps
 A Density Matrix Renormalization Group program with Matrix Product State and Matrix Product Operator formalism
 
 > [!NOTE]
