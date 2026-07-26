@@ -302,6 +302,17 @@ namespace DMRG {
 			return groundEnergy;
 		}
 
+		void MPSDMRGAlgorithm::InitREnv(const MatrixProductState& state)
+		{
+			const int N = state.N;
+
+			Renv.clear();
+			Renv.resize(N);
+
+			Renv[N - 1] = mpo.RightBoundary();
+			for (int i = N - 1; i > 0; --i)
+				Renv[i - 1] = mpo.UpdateRight(Renv[i], state.GetSiteTensor(i));
+		}
 
 		double MPSDMRGAlgorithm::GroundStateSearch(MatrixProductState& state, int numSweeps, const std::vector<const MatrixProductState*>& references, double penaltyWeight)
 		{
@@ -314,14 +325,10 @@ namespace DMRG {
 			// left/right MPO environments per site
 			Lenv.clear();
 			Lenv.resize(N);
-			Renv.clear();
-			Renv.resize(N);
+			Lenv[0] = mpo.LeftBoundary();
 
 			// state is right canonical (center at site 0): build all right environments
-			Lenv[0] = mpo.LeftBoundary();
-			Renv[N - 1] = mpo.RightBoundary();
-			for (int i = N - 1; i > 0; --i)
-				Renv[i - 1] = mpo.UpdateRight(Renv[i], state.GetSiteTensor(i));
+			InitREnv(state);
 
 			// overlap environments per reference (only used for deflation)
 			OLenv.clear();
@@ -557,11 +564,7 @@ namespace DMRG {
 			const int N = state.N;
 			if (N <= 0) return std::numeric_limits<double>::infinity();
 
-			Renv.clear();
-			Renv.resize(N);
-			Renv[N - 1] = mpo.RightBoundary();
-			for (int i = N - 1; i > 0; --i)
-				Renv[i - 1] = mpo.UpdateRight(Renv[i], state.GetSiteTensor(i));
+			InitREnv(state);
 
 			SingleSiteEffectiveHamiltonian H;
 			H.mpo = &mpo;

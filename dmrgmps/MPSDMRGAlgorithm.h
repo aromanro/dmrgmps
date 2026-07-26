@@ -79,6 +79,7 @@ namespace DMRG {
 			HeisenbergMPO mpo;
 			MatrixProductState mps;
 
+			void InitREnv(const MatrixProductState& state);
 			void SweepRightTwoSites(MatrixProductState& state, const std::vector<const MatrixProductState*>& references, double& energy, double& maxTruncation, bool deflate, double penaltyWeight);
 			void SweepLeftTwoSites(MatrixProductState& state, const std::vector<const MatrixProductState*>& references, double& energy, double& maxTruncation, bool deflate, double penaltyWeight);
 			void SweepRightOneSite(MatrixProductState& state, const std::vector<const MatrixProductState*>& references, double& energy, double& maxTruncation, bool deflate, double penaltyWeight, double alpha);
