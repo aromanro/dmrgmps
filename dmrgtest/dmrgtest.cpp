@@ -218,9 +218,14 @@ int main()
 		const int sites = 20, sweeps = 8;
 		const unsigned int bonds[] = { 8, 16, 32 };
 
-		const double energyAnalyticalValue = 0.5 * (1. - 1. / sin(0.5 * M_PI / (sites + 1.))); 
+		const double energyAnalyticalValue = 0.5 * (1. - 1. / sin(M_PI_2 / (sites + 1.))); 
 		std::cout << "  Analytical energy value for 20 sites = " << energyAnalyticalValue << ", per-bond = " << energyAnalyticalValue / (sites - 1) << '\n';
-		
+
+		// for s+s- it's something like:
+		// corrVal = 0.5 * 1. / (sites + 1.) * (1. / sin(M_PI_2 / (sites + 1.)) - pow(-1., l + 1.) / sin(M_PI_2 * (2. * l + 3.) / (sites + 1.)));
+		// where l = bond index (0..N-2) for the N-site chain.
+		// I need to do some slight changes to RunChain to return the s+s- correlations for each bond
+		// then I'll add the check
 
 		for (int method = 0; method < 3; ++method)
 		{
