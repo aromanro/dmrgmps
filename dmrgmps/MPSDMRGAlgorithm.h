@@ -39,7 +39,7 @@ namespace DMRG {
 
 			// results reported to the GUI
 			double truncationError;
-			std::list<double> results; // per-bond energy contribution <h_i,i+1> of the final ground state
+			std::vector<double> results; // per-bond energy contribution <h_i,i+1> of the final ground state
 			unsigned int nrStates;     // number of excited states targeted (for the gap)
 			double EnergyGap;
 			double groundEnergy;
@@ -64,6 +64,10 @@ namespace DMRG {
 			// states are seeded with rngSeed + stateIndex so they do not start out
 			// identical to the ground state
 			unsigned int rngSeed = 42;
+
+			// a way of adding more results between adjacent sites (e.g. correlation functions) is following:
+			std::vector<std::pair<Tensor2, Tensor2>> correlations; // each pair is (operator1, operator2) for <op1_i op2_j> measurements
+			std::vector<std::vector<double>> correlationResults;
 
 			double CalculateFinite(int chainLength, int numSweeps);
 

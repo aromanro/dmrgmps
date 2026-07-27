@@ -39,7 +39,7 @@ CdmrgmpsDoc::CdmrgmpsDoc()
 	// TODO: add one-time construction code here
 	m_Chart.useSpline = false;
 	m_Chart.XAxisLabel = L"Site";
-	m_Chart.YAxisLabel = L"<S_i S_{i+1}>";
+	m_Chart.YAxisLabel = L"<h_i h_{i+1}>";
 
 	m_Chart.XAxisMin = 0;
 }
@@ -158,7 +158,7 @@ void CdmrgmpsDoc::UpdateChartData()
 {
 	if (!thread || !thread->terminated) return;
 
-	std::list<double> results;
+	std::vector<double> results;
 
 	CString spinStr;
 	if (0 == options.model)
@@ -182,12 +182,9 @@ void CdmrgmpsDoc::UpdateChartData()
 	SetTitle(L"Finished");
 
 	std::vector<double> x, y;
-	int i = 0;
-	for (auto res : results)
-	{
-		x.push_back(++i);
-		y.push_back(res);
-	}
+	y.swap(results);
+	x.resize(y.size());
+	std::iota(x.begin(), x.end(), 0);
 
 	m_Chart.clear();
 

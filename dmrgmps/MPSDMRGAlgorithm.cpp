@@ -229,6 +229,11 @@ namespace DMRG {
 			if (numSweeps < 1) numSweeps = 1;
 
 			results.clear();
+			correlationResults.clear();
+			
+			results.reserve(chainLength - 1);
+			correlationResults.reserve(chainLength - 1);
+
 			excitedEnergies.clear();
 			truncationError = 0;
 			EnergyGap = 0;
@@ -606,6 +611,17 @@ namespace DMRG {
 				const double SmSp = state.TwoSiteExpectation(i, Sminus, m_Splus);
 
 				results.push_back(m_Jz * SzSz + 0.5 * m_Jxy * (SpSm + SmSp));
+
+				// are there more to compute?
+				if (!correlations.empty()) {
+					correlationResults.emplace_back();
+					correlationResults.back().reserve(correlations.size());
+					for (const auto& corr : correlations)
+					{
+						const double value = state.TwoSiteExpectation(i, corr.first, corr.second);
+						correlationResults[i].push_back(value);
+					}
+				}
 
 				state.LeftNormalize(i, chi, svdThreshold);
 			}

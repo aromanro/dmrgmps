@@ -18,7 +18,8 @@
 
 #include <Eigen/Eigen>
 
-#include <cmath>
+#define _USE_MATH_DEFINES 1
+#include <math.h>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -200,6 +201,52 @@ int main()
 					// A finite open chain sits close to the thermodynamic per-bond limit,
 					// but is not bounded by it, so only require it to be in the ballpark.
 					Check(cr, std::abs(perBond - betheLimit) < 0.01, "E/bond within 0.01 of Bethe limit");
+					Check(cr, bondCount == sites - 1, "chart has N-1 bond points");
+					Check(cr, std::abs(bondCorrSum - e) < 1e-4, "sum<S.S> == E (chart data matches energy)");
+				}
+			}
+			Check(cr, haveDecrease, "E/bond is non-increasing with bond dimension");
+		}
+	}
+	std::cout << '\n';
+
+	// ---- Spin-1/2 XY even number of sites chain, with known analytical results --------
+	// TODO: Also check s^+_i s^-_{i+1} correlations against the analytical result.
+
+	std::cout << "-- Spin-1/2 XY chain with even number of sites convergence --\n";
+	{
+		const int sites = 20, sweeps = 8;
+		const unsigned int bonds[] = { 8, 16, 32 };
+
+		const double energyAnalyticalValue = 0.5 * (1. - 1. / sin(0.5 * M_PI / (sites + 1.))); 
+		std::cout << "  Analytical energy value for 20 sites = " << energyAnalyticalValue << ", per-bond = " << energyAnalyticalValue / (sites - 1) << '\n';
+		
+
+		for (int method = 0; method < 3; ++method)
+		{
+			std::cout << "  Method " << method << ": "
+				<< (method == 0 ? "single-site" : (method == 1 ? "one-site with subspace expansion" : "two-site")) << '\n';
+
+			double prevPerBond = 0.;
+			bool haveDecrease = true;
+
+			for (int i = 0; i < 3; ++i)
+			{
+				double perBond = 0., bondCorrSum = 0.; int bondCount = 0;
+				const double e = RunChain(2, Sz12, Sp12, sites, sweeps, bonds[i], 0., 1., perBond, bondCorrSum, bondCount, method);
+				std::cout << "  m = " << std::setw(3) << bonds[i]
+					<< "  E/bond = " << perBond
+					<< "  E(total) = " << e
+					<< "  sum<S.S> = " << bondCorrSum << '\n';
+				if (i > 0 && perBond > prevPerBond + 1e-6)
+					haveDecrease = false;
+				prevPerBond = perBond;
+
+				if (i == 2)
+				{
+					// A finite open chain sits close to the thermodynamic per-bond limit,
+					// but is not bounded by it, so only require it to be in the ballpark.
+					Check(cr, std::abs(e - energyAnalyticalValue) < 0.01, "E within 0.01 of analytical value");
 					Check(cr, bondCount == sites - 1, "chart has N-1 bond points");
 					Check(cr, std::abs(bondCorrSum - e) < 1e-4, "sum<S.S> == E (chart data matches energy)");
 				}
