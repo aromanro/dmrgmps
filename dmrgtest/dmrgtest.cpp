@@ -93,9 +93,16 @@ namespace {
 
 	double RunChain(int physicalDim, const Eigen::MatrixXd& Sz, const Eigen::MatrixXd& Splus,
 		int sites, int sweeps, unsigned int maxStates, double Jz, double Jxy,
-		double& energyPerBond, double& bondCorrSum, int& bondCount, int method = 0)
+		double& energyPerBond, double& bondCorrSum, int& bondCount, int method = 0, std::vector<std::vector<double>> *correlations = nullptr)
 	{
 		DMRG::MPS::MPSDMRGAlgorithm dmrg(physicalDim, ToTensor(Sz), ToTensor(Splus), Jz, Jxy, maxStates, 0, method);
+
+		if (correlations)
+		{
+			// Add a correlation measurement for <S+_i S-_j> between all bonds.
+			const Eigen::MatrixXd Sminus = Splus.transpose();
+			dmrg.correlations.emplace_back(ToTensor(Splus), ToTensor(Sminus));
+		}
 
 		const double energy = dmrg.CalculateFinite(sites, sweeps);
 
@@ -106,6 +113,9 @@ namespace {
 			bondCorrSum += s;
 
 		bondCount = static_cast<int>(dmrg.results.size());
+
+		if (correlations)
+			correlations->swap(dmrg.correlationResults);
 
 		return energy;
 	}
@@ -196,8 +206,7 @@ int main()
 					haveDecrease = false;
 				prevPerBond = perBond;
 
-				if (i == 2)
-				{
+				if (i == 2) {
 					// A finite open chain sits close to the thermodynamic per-bond limit,
 					// but is not bounded by it, so only require it to be in the ballpark.
 					Check(cr, std::abs(perBond - betheLimit) < 0.01, "E/bond within 0.01 of Bethe limit");
@@ -238,7 +247,8 @@ int main()
 			for (int i = 0; i < 3; ++i)
 			{
 				double perBond = 0., bondCorrSum = 0.; int bondCount = 0;
-				const double e = RunChain(2, Sz12, Sp12, sites, sweeps, bonds[i], 0., 1., perBond, bondCorrSum, bondCount, method);
+				std::vector<std::vector<double>> correlations;
+				const double e = RunChain(2, Sz12, Sp12, sites, sweeps, bonds[i], 0., 1., perBond, bondCorrSum, bondCount, method, &correlations);
 				std::cout << "  m = " << std::setw(3) << bonds[i]
 					<< "  E/bond = " << perBond
 					<< "  E(total) = " << e
@@ -247,13 +257,19 @@ int main()
 					haveDecrease = false;
 				prevPerBond = perBond;
 
-				if (i == 2)
-				{
+				if (i == 2) {
 					// A finite open chain sits close to the thermodynamic per-bond limit,
 					// but is not bounded by it, so only require it to be in the ballpark.
 					Check(cr, std::abs(e - energyAnalyticalValue) < 0.01, "E within 0.01 of analytical value");
 					Check(cr, bondCount == sites - 1, "chart has N-1 bond points");
 					Check(cr, std::abs(bondCorrSum - e) < 1e-4, "sum<S.S> == E (chart data matches energy)");
+
+					for (int l = 0; l < bondCount; ++l)
+					{
+						const double corrVal = -0.5 * 1. / (sites + 1.) * (1. / sin(M_PI_2 / (sites + 1.)) - pow(-1., l + 1.) / sin(M_PI_2 * (2. * l + 3.) / (sites + 1.)));
+						std::cout << "    bond " << l << ": <S+_i S-_j> = " << correlations[l][0] << ", analytical = " << corrVal << '\n';
+						Check(cr, std::abs(correlations[l][0] - corrVal) < 0.005, "bond correlation matches analytical value");
+					}
 				}
 			}
 			Check(cr, haveDecrease, "E/bond is non-increasing with bond dimension");
